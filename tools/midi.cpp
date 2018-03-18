@@ -163,8 +163,15 @@ int main(int argc, char *argv[]) {
 					uint8_t channel = event_type & 0x0F;
 					printf("%s event_type=%02X, event_kind=%02X, channel=%02X delta_time=%d\n", running ? "--" : "@@", event_type, event_kind, channel, delta_time);
 					printf("   ");
+					
+					//sysex
+					if(event_type == 0xF0) {
+						while(mtrk->data[index++] != 0xF7);
+						printf("Meta sysex\n");
+						continue;
+					}
 					//meta
-					if(event_kind == 0xF0) {
+					if(event_type == 0xFF) {
 						uint8_t kind = mtrk->data[index++];
 						uint32_t length = getdeltatime();
 						printf("kind=%02X\n", kind);
@@ -184,7 +191,7 @@ int main(int argc, char *argv[]) {
 							tempo = (tempo << 8) | mtrk->data[index++];
 							tempo = (tempo << 8) | mtrk->data[index++];
 							tempo = (tempo << 8) | mtrk->data[index++];
-							printf("TEMPO=%d[ms]\n", tempo / 1000);
+							printf("TEMPO=%d[ms], tempo=%d\n", tempo / 1000, tempo);
 							continue;
 						}
 
@@ -198,6 +205,8 @@ int main(int argc, char *argv[]) {
 							printf("Time Sig=%d[ms]\n", tsig);
 							continue;
 						}
+						
+
 						
 						printf("SysEx length=%d\n", length);
 						index += length;
